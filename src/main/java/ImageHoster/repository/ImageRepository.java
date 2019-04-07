@@ -1,5 +1,6 @@
 package ImageHoster.repository;
 
+import ImageHoster.model.Comment;
 import ImageHoster.model.Image;
 import org.springframework.stereotype.Repository;
 
@@ -86,6 +87,21 @@ public class ImageRepository {
         } catch (Exception e) {
             transaction.rollback();
         }
+    }
+
+    public void createCommentForImage(Comment toAddComment){
+
+      EntityManager em = emf.createEntityManager();
+      EntityTransaction transaction = em.getTransaction();
+
+      try {
+        transaction.begin();
+        em.persist(toAddComment);
+        transaction.commit();
+      } catch (Exception e) {
+        transaction.rollback();
+      }
+
     }
 
     //The method receives the Image id of the image to be deleted in the database
