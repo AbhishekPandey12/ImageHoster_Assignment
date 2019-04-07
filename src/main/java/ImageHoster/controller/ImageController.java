@@ -146,7 +146,7 @@ public class ImageController {
     }
 
 
-    //This method converts the image to Base64 format
+    //This method converts the bugsimage to Base64 format
     private String convertUploadedFileToBase64(MultipartFile file) throws IOException {
         return Base64.getEncoder().encodeToString(file.getBytes());
     }
