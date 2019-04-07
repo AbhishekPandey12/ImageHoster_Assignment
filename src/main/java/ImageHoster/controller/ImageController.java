@@ -1,5 +1,6 @@
 package ImageHoster.controller;
 
+import ImageHoster.model.Comment;
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.*;
 
 @Controller
@@ -45,11 +47,12 @@ public class ImageController {
     //Also now you need to add the tags of an image in the Model type object
     //Here a list of tags is added in the Model type object
     //this list is then sent to 'images/image.html' file and the tags are displayed
-    @RequestMapping("/images/{id}/{title}")
+    @RequestMapping("/images/{title}")
     public String showImage(@PathVariable("title") String title, Model model) {
         Image image = imageService.getImageByTitle(title);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        model.addAttribute("comments", image.getComments());
         return "images/image";
     }
 
@@ -145,6 +148,25 @@ public class ImageController {
         return "redirect:/images";
     }
 
+    @RequestMapping(value = "/image/{imageId}/{imageTitle}/comments", method = RequestMethod.POST)
+    public String addCommentsToImage(@PathVariable("imageId") Integer image_id, @PathVariable("imageTitle") String image_title, @RequestParam("comment") String image_comment, HttpSession session){
+
+      Comment comment = new Comment();
+
+      Image image = imageService.getImage(image_id);
+      comment.setImage(image);
+
+      User user = (User) session.getAttribute("loggeduser");
+      comment.setUser(user);
+
+      comment.setCreatedDate(LocalDate.now());
+      comment.setText(image_comment);
+
+      imageService.createCommentForImage(comment);
+
+      return "redirect:/images/" + image_title;
+    }
+
 
     //This method converts the image to Base64 format
     private String convertUploadedFileToBase64(MultipartFile file) throws IOException {
@@ -170,6 +192,7 @@ public class ImageController {
         }
         return tags;
     }
+
 
 
     //The method receives the list of all tags
