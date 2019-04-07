@@ -27,7 +27,7 @@ public class ImageController {
     @Autowired
     private TagService tagService;
 
-    private boolean differentUser = false;
+    private String differentUserFromFlow = "";
 
     //This method displays all the images in the user home page after successful login
     @RequestMapping("images")
@@ -50,10 +50,14 @@ public class ImageController {
     @RequestMapping("/images/{id}/{title}")
     public String showImage(@PathVariable("id") Integer imageId, @PathVariable("title") String title, Model model) {
       Image image = imageService.getImage(imageId);
-      if (differentUser) {
+      if(differentUserFromFlow != "") {
         String error = "Only the owner of the image can edit the image";
-        model.addAttribute("editError", error);
-        differentUser = false;
+        if (differentUserFromFlow.equalsIgnoreCase("Edit")) {
+          model.addAttribute("editError", error);
+        } else {
+          model.addAttribute("deleteError", error);
+        }
+        differentUserFromFlow = "";
       }
       model.addAttribute("image", image);
       model.addAttribute("tags", image.getTags());
@@ -110,7 +114,7 @@ public class ImageController {
         model.addAttribute("tags", tags);
         return "images/edit";
       } else {
-        differentUser = true;
+        differentUserFromFlow = "Edit";
         return "redirect:/images/" + image.getId() + "/" + image.getTitle();
       }
 
@@ -155,9 +159,16 @@ public class ImageController {
     //The method calls the deleteImage() method in the business logic passing the id of the image to be deleted
     //Looks for a controller method with request mapping of type '/images'
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
-    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId) {
+    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, HttpSession session) {
+      User user = (User) session.getAttribute("loggeduser");
+      Image image = imageService.getImage(imageId);
+      if (user.getId() == image.getUser().getId()) {
         imageService.deleteImage(imageId);
         return "redirect:/images";
+      } else {
+        differentUserFromFlow = "Delete";
+        return "redirect:/images/" + image.getId() + "/" + image.getTitle();
+      }
     }
 
 
