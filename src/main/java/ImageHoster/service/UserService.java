@@ -13,11 +13,7 @@ public class UserService {
   @Autowired
   private UserRepository userRepository;
 
-  private Pattern pattern;
-  private Matcher matcher;
 
-  private static final String PASSWORD_PATTERN =
-          "(?=(.*[a-z]){1,})(?=(.*[A-Z]){1,})(?=(.*[\\d]){1,})(?=(.*[\\W]){1,})(?!.*\\s).{4,}";
 
   //Call the registerUser() method in the UserRepository class to persist the user record in the database
   public void registerUser(User newUser) {
@@ -38,12 +34,6 @@ public class UserService {
     } else {
       return null;
     }
-  }
-
-  public boolean validatePassword(String passwordToBeValidated) {
-    pattern = Pattern.compile(PASSWORD_PATTERN);
-    matcher = pattern.matcher(passwordToBeValidated);
-    return matcher.matches();
   }
 
 }

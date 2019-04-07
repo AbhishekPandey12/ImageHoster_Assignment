@@ -29,11 +29,6 @@ public class Comment {
   public Comment(){
   };
 
-  public Comment(String text, LocalDate createdDate) {
-    this.text = text;
-    this.createdDate = createdDate;
-  }
-
   public Integer getId() {
     return id;
   }

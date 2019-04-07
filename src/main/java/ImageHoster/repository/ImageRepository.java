@@ -89,21 +89,6 @@ public class ImageRepository {
         }
     }
 
-    public void createCommentForImage(Comment toAddComment){
-
-      EntityManager em = emf.createEntityManager();
-      EntityTransaction transaction = em.getTransaction();
-
-      try {
-        transaction.begin();
-        em.persist(toAddComment);
-        transaction.commit();
-      } catch (Exception e) {
-        transaction.rollback();
-      }
-
-    }
-
     //The method receives the Image id of the image to be deleted in the database
     //Creates an instance of EntityManager
     //Starts a transaction

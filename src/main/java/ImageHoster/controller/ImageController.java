@@ -63,6 +63,7 @@ public class ImageController {
       }
       model.addAttribute("image", image);
       model.addAttribute("tags", image.getTags());
+      model.addAttribute("comments", image.getComments());
       return "images/image";
 
     }
@@ -172,25 +173,6 @@ public class ImageController {
         differentUserFromFlow = "Delete";
         return "redirect:/images/" + image.getId() + "/" + image.getTitle();
       }
-    }
-
-    @RequestMapping(value = "/image/{imageId}/{imageTitle}/comments", method = RequestMethod.POST)
-    public String addCommentsToImage(@PathVariable("imageId") Integer image_id, @PathVariable("imageTitle") String image_title, @RequestParam("comment") String image_comment, HttpSession session){
-
-      Comment comment = new Comment();
-
-      Image image = imageService.getImage(image_id);
-      comment.setImage(image);
-
-      User user = (User) session.getAttribute("loggeduser");
-      comment.setUser(user);
-
-      comment.setCreatedDate(LocalDate.now());
-      comment.setText(image_comment);
-
-      imageService.createCommentForImage(comment);
-
-      return "redirect:/images/" + image.getId() + "/" + image.getTitle();
     }
 
 
