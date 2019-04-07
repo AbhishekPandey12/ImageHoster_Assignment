@@ -27,6 +27,8 @@ public class ImageController {
     @Autowired
     private TagService tagService;
 
+    private String differentUserFromFlow = "";
+
     //This method displays all the images in the user home page after successful login
     @RequestMapping("images")
     public String getUserImages(Model model) {
@@ -46,11 +48,20 @@ public class ImageController {
     //Here a list of tags is added in the Model type object
     //this list is then sent to 'images/image.html' file and the tags are displayed
     @RequestMapping("/images/{id}/{title}")
-    public String showImage(@PathVariable("title") String title, Model model) {
-        Image image = imageService.getImageByTitle(title);
-        model.addAttribute("image", image);
-        model.addAttribute("tags", image.getTags());
-        return "images/image";
+    public String showImage(@PathVariable("id") Integer imageId, @PathVariable("title") String title, Model model) {
+      Image image = imageService.getImage(imageId);
+      if(differentUserFromFlow != "") {
+        String error = "Only the owner of the image can edit the image";
+        if (differentUserFromFlow.equalsIgnoreCase("Edit")) {
+          model.addAttribute("editError", error);
+        } else {
+          model.addAttribute("deleteError", error);
+        }
+        differentUserFromFlow = "";
+      }
+      model.addAttribute("image", image);
+      model.addAttribute("tags", image.getTags());
+      return "images/image";
     }
 
     //This controller method is called when the request pattern is of type 'images/upload'
@@ -92,13 +103,21 @@ public class ImageController {
     //The method first needs to convert the list of all the tags to a string containing all the tags separated by a comma and then add this string in a Model type object
     //This string is then displayed by 'edit.html' file as previous tags of an image
     @RequestMapping(value = "/editImage")
-    public String editImage(@RequestParam("imageId") Integer imageId, Model model) {
-        Image image = imageService.getImage(imageId);
+    public String editImage(@RequestParam("imageId") Integer imageId, Model model, HttpSession session) {
+      Image image = imageService.getImage(imageId);
 
+      User user = (User) session.getAttribute("loggeduser");
+
+      if (user.getId() == image.getUser().getId()) {
         String tags = convertTagsToString(image.getTags());
         model.addAttribute("image", image);
         model.addAttribute("tags", tags);
         return "images/edit";
+      } else {
+        differentUserFromFlow = "Edit";
+        return "redirect:/images/" + image.getId() + "/" + image.getTitle();
+      }
+
     }
 
     //This controller method is called when the request pattern is of type 'images/edit' and also the incoming request is of PUT type
@@ -132,7 +151,7 @@ public class ImageController {
         updatedImage.setDate(new Date());
 
         imageService.updateImage(updatedImage);
-        return "redirect:/images/" + updatedImage.getTitle();
+        return "redirect:/images/" + updatedImage.getId() + "/" + updatedImage.getTitle();
     }
 
 
@@ -140,9 +159,16 @@ public class ImageController {
     //The method calls the deleteImage() method in the business logic passing the id of the image to be deleted
     //Looks for a controller method with request mapping of type '/images'
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
-    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId) {
+    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, HttpSession session) {
+      User user = (User) session.getAttribute("loggeduser");
+      Image image = imageService.getImage(imageId);
+      if (user.getId() == image.getUser().getId()) {
         imageService.deleteImage(imageId);
         return "redirect:/images";
+      } else {
+        differentUserFromFlow = "Delete";
+        return "redirect:/images/" + image.getId() + "/" + image.getTitle();
+      }
     }
 
 
